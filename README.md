@@ -33,3 +33,6 @@ flooding anidb with requests will bring your IP to their blacklist - I stepped
 back on that decision
 - Because automated web parsing is banned by anidb, **in order to use this library,
 you must supply it with real browser's user agent**
+- Its **only possible to process pages available to anonymous**. I may reconsider
+that choice later, but for the time being everything that require you to provide
+your anidb account creditnails in unaccessible
