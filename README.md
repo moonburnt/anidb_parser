@@ -1,4 +1,4 @@
-# anidb crawler
+# anidb parser
 
 ## Disclaimer
 
@@ -19,10 +19,10 @@ right now its extremely WIP
 ## Usage Example
 
 ```python3
-import anidb_crawler as ac
+import anidb_parser as ap
 
-fetcher = ac.AnidbFetcher(user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101 Firefox/78.0")
-client = ac.AnidbClient(fetcher_instance = fetcher)
+fetcher = ap.AnidbFetcher(user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101 Firefox/78.0")
+client = ap.AnidbClient(fetcher_instance = fetcher)
 
 client.get_anime(99)
 ```
@@ -31,5 +31,5 @@ client.get_anime(99)
 - **There wont be async support**. I initially planned to implement it, but since
 flooding anidb with requests will bring your IP to their blacklist - I stepped
 back on that decision
-- Because web crawlers are banned by anidb, **in order to use this library, you
-must supply it with real browser's user agent**
+- Because automated web parsing is banned by anidb, **in order to use this library,
+you must supply it with real browser's user agent**

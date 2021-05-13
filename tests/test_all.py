@@ -1,5 +1,5 @@
 import pytest
-import anidb_crawler
+import anidb_parser as anidb_crawler
 
 @pytest.mark.parametrize("text, category", [('boku no', None),
                                             ('boku no', 'anime'),
