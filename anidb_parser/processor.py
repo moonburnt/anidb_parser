@@ -11,9 +11,32 @@ class AnidbProcessor:
     def __init__(self):
         pass
 
-    def get_search_data(self, raw_data:str):
+    def search_data(self, raw_data:str):
         '''Clean up raw search response into dictionary with only useful stuff'''
-        print(raw_data)
+        sauce = soup(raw_data, 'html.parser')
+
+        data = data_types.SearchStorage()
+
+        raw_search_tab = sauce.find("div", {"class": "animelist_list"})
+        raw_search_results = raw_search_tab.tbody.find_all("tr")
+        for item in raw_search_results:
+            raw_id = item.get('id', None)
+            if not raw_id:
+                #coz it should be there for every item, I guess
+                continue
+            if raw_id.startswith('a'):
+                item_id = int(raw_id.replace('a', ''))
+            else:
+                #this isnt the best way to do things, I guess
+                item_id = int(raw_id)
+
+            number = int(item.find("td", {"class": "number"}).text)
+
+            raw_image = item.find("td", {"data-label": "Image"})
+            if raw_image:
+                image = raw_image.source.get('srcset', None)
+            else:
+                image = ""
 
     def anime_data(self, raw_data:str):
         '''Cleans up raw anime page text into dict with only useful stuff'''

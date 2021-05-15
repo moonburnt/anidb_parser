@@ -39,6 +39,17 @@ class AnidbFetcher:
         search_exclusive_categories = {'all': 'search/anime'}
         self.search_categories = self.item_categories | search_exclusive_categories
 
+    def fetch_url(self, url:str):
+        '''Fetches url, checks response code and returns response content.
+        Only meant for internal usage'''
+        log.debug(f"Fetching {url}")
+        answer = self.session.get(url, timeout = self.timeout)
+        answer.raise_for_status()
+
+        #returning raw answer object, because due to redirects we may need to
+        #double check answer.url to proceed
+        return answer
+
     #there is also "advanced search", but I wont bother with it for now
     def search(self, text:str, category:str = None):
         '''Search for specified info in provided category'''
@@ -50,10 +61,9 @@ class AnidbFetcher:
             category = "all"
 
         search_url = f"{SITE_URL}/{self.search_categories[category]}/?adb.search={text}"
-        log.debug(f"Fetching {search_url}")
-        answer = self.session.get(search_url, timeout = self.timeout)
 
-        return answer.text
+        #return answer.text
+        return self.fetch_url(search_url)
 
     def get_item(self, item_id:int, category:str = None):
         '''Get info of provided item in provided category'''
@@ -66,8 +76,6 @@ class AnidbFetcher:
             category = "anime"
 
         search_url = f"{SITE_URL}/{self.item_categories[category]}/{item_id}"
-        log.debug(f"Fetching {search_url}")
-        answer = self.session.get(search_url, timeout = self.timeout)
 
-        return answer.text
+        return self.fetch_url(search_url)
 

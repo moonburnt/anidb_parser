@@ -54,3 +54,21 @@ class ReviewStorage:
 
 class Review:
     pass
+
+class SearchStorage:
+    pass
+
+@dataclass
+class AnimeSearchPreview:
+    number: int
+    title: str
+    show_type: str
+    episodes_count: int = 0
+    rating: float = 0.0
+    average: float = 0.0
+    reviews: int = 0
+    user_counter: int = 0
+    aired: str = ""
+    ended: str = ""
+    image: str = ""
+    award: str = ""

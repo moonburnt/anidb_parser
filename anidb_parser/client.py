@@ -25,14 +25,24 @@ class AnidbClient:
     def get_anime(self, anime):
         '''Get provided anime. Receives either id or name to search it'''
         if isinstance(anime, int):
+            log.debug(f"Attempting to fetch anime with id {anime}")
             data = self.fetcher.get_item(anime, category = "anime")
         else:
+            log.debug(f"Attempting to find anime matching search {anime}")
             #this will return not animu's page, but multiple search entries, in
-            #case there are multiple matches. I should probably disable redirects
-            #in fetcher and then process this manually
-            log.error("Sorry, searching for animu isnt implemented yet")
-            return
+            #case there are multiple matches
             data = self.fetcher.search(anime, category = "anime")
+            #checking if request has still returned search page or redirected us
+            #to anime's own page (happens if only one match to request has found)
+            #It may be now the most optimal way to return two different answer's
+            #contents, but since they have different classes, we can later filter
+            #results out with isinstance() and proceed accordingly
+            if data.url.count("search"):
+                log.debug("Received search results, processing accordingly")
+                clean_data = self.processor.search_data(data.text)
+                return clean_data
 
-        clean_data = self.processor.anime_data(data)
+        log.debug("Received anime data, processing accordingly")
+        clean_data = self.processor.anime_data(data.text)
+
         return clean_data

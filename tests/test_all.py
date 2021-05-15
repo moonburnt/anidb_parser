@@ -30,7 +30,12 @@ def test_getter(item, category):
 
     assert isinstance(result, str)
 
-@pytest.mark.parametrize("animu", [(99), (10475)])
+#4544 should fail right now due to adult content warning - for now, I have no idea
+#how to handle these. Also last one should fail coz no matching results has been
+#found - I need to somehow handle it too
+@pytest.mark.parametrize("animu", [(99), (10475), (11829), (4544),
+                                   ("Samurai Champloo"), ("saMuRai CHAMPLOO"),
+                                   ("saMuRai_CHAMPLOO"), ("saMuRai_CHAMPLOO 12412")])
 def test_getting_animu(animu):
     fetcher = anidb_crawler.AnidbFetcher(user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101 Firefox/78.0")
     client = anidb_crawler.AnidbClient(fetcher_instance = fetcher)
