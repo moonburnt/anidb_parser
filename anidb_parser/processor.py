@@ -1,6 +1,6 @@
 import logging
 from bs4 import BeautifulSoup as soup
-from . import data_types, shared
+from . import data_types, shared, exceptions
 
 log = logging.getLogger(__name__)
 
@@ -11,13 +11,24 @@ class AnidbProcessor:
     def __init__(self):
         pass
 
-    def search_data(self, raw_data:str):
+    def search_data(self, raw_data):
         '''Clean up raw search response into dictionary with only useful stuff'''
         sauce = soup(raw_data, 'html.parser')
 
         data = data_types.SearchStorage()
 
+        data.url_title = sauce.title.string
+        log.debug(f"Got page title: {data.url_title}")
+
+        data.url_link = sauce.find("link", {"property": "og:url"})['href']
+        log.debug(f"Got page url: {data.url_link}")
+
         raw_search_tab = sauce.find("div", {"class": "animelist_list"})
+        #janky way to check if request has returned empty results
+        if not raw_search_tab.tbody:
+            log.warning("No valid search data has been found, raising exception")
+            raise exceptions.NoSearchResults(data.url_link)
+
         raw_search_results = raw_search_tab.tbody.find_all("tr")
         for item in raw_search_results:
             raw_id = item.get('id', None)
@@ -47,6 +58,17 @@ class AnidbProcessor:
 
         data.url_title = sauce.title.string
         log.debug(f"Got page title: {data.url_title}")
+
+        #this is not the most efficient thing since we should already know url
+        #from response of requests. Also it may break. But for now it will do
+        data.url_link = sauce.find("link", {"property": "og:url"})['href']
+        log.debug(f"Got page url: {data.url_link}")
+
+        #checking page's title to find if it returned adult content warning
+        #Idk if it may break at some point or not
+        if data.url_title.count("Adult Content Warning"):
+            log.warning("Got adult content warning, raising exception")
+            raise exceptions.AdultContentWarning(data.url_link)
 
         raw_info_tab = sauce.find("div", {"class": "tabbed_pane"})
         #we are doing like that here and below, coz items may have unconfirmed

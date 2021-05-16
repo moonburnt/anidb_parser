@@ -17,7 +17,15 @@ class PageUnavailable(ParserException):
     to parse at the moment (for unknown reasons)'''
     pass
 
+class NoSearchResults(ParserException):
+    '''Exception thrown if search request has returned no results'''
+    def __init__(self, url):
+        message = f"{url} has returned no results"
+        super().__init__(message)
+
 class AdultContentWarning(ParserException):
     '''Exception thrown by anime pages that cant be processed due to Adult Content
     Warning pop-up that naturally require user to log in'''
-    pass
+    def __init__(self, url):
+        message = f"{url} has returned Adult Content Warning"
+        super().__init__(message)
