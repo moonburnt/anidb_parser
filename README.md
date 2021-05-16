@@ -31,6 +31,9 @@ client.get_anime(99)
 - **There wont be async support**. I initially planned to implement it, but since
 flooding anidb with requests will bring your IP to their blacklist - I stepped
 back on that decision
+- Another reason behind decision above is that **multiple requests within few
+seconds will return 403**, due to anti-bot protection. For the time being, **its
+your own responsibility to ensure there are pauses long enough to prevent it**
 - Because automated web parsing is banned by anidb, **in order to use this library,
 you must supply it with real browser's user agent**
 - Its **only possible to process pages available to anonymous**. I may reconsider
