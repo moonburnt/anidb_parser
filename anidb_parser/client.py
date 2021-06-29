@@ -9,12 +9,14 @@ class AnidbClient:
     browser's user_agent, because by default anidb bans all automated requests'''
     def __init__(self, fetcher_instance = None, processor_instance = None):
         #if not passed manually - these are instanced with no args, for now
-        if not fetcher_instance or not isinstance(fetcher_instance, fetcher.AnidbFetcher):
+        if not fetcher_instance or not isinstance(fetcher_instance,
+                                                  fetcher.AnidbFetcher):
             self.fetcher = fetcher.AnidbFetcher()
         else:
             self.fetcher = fetcher_instance
 
-        if not processor_instance or not isinstance(processor_instance, processor.AnidbProcessor):
+        if not processor_instance or not isinstance(processor_instance,
+                                                    processor.AnidbProcessor):
             self.processor = processor.AnidbProcessor()
         else:
             self.processor = processor_instance

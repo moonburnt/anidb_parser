@@ -17,58 +17,76 @@ class AnidbProcessor:
 
         data = data_types.SearchStorage()
 
-        data.url_title = sauce.title.string
-        log.debug(f"Got page title: {data.url_title}")
+        url_title = sauce.title.string
+        log.debug(f"Got page title: {url_title}")
 
-        data.url_link = sauce.find("link", {"property": "og:url"})['href']
-        log.debug(f"Got page url: {data.url_link}")
+        url_link = sauce.find("link", {"property": "og:url"})['href']
+        log.debug(f"Got page url: {url_link}")
 
         raw_search_tab = sauce.find("div", {"class": "animelist_list"})
         #janky way to check if request has returned empty results
         if not raw_search_tab.tbody:
             log.warning("No valid search data has been found, raising exception")
-            raise exceptions.NoSearchResults(data.url_link)
+            raise exceptions.NoSearchResults(url_link)
 
         raw_search_results = raw_search_tab.tbody.find_all("tr")
         for item in raw_search_results:
             raw_id = item.get('id', None)
             if not raw_id:
                 #coz it should be there for every item, I guess
+                log.debug("Couldnt find item's id, skippin")
                 continue
+
             if raw_id.startswith('a'):
                 item_id = int(raw_id.replace('a', ''))
             else:
                 #this isnt the best way to do things, I guess
                 item_id = int(raw_id)
+            log.debug(f"Got id: {item_id}")
 
+            #I could easily do this with enumerator, but it wouldnt be consistent
             number = int(item.find("td", {"class": "number"}).text)
+            log.debug(f"Got item number: {number}")
 
             raw_image = item.find("td", {"data-label": "Image"})
             if raw_image:
                 image = raw_image.source.get('srcset', None)
+                log.debug(f"Got cover image link {image}")
             else:
                 image = ""
+                log.debug("Couldnt find cover image, using placeholder")
+
+            raw_title = item.find("td", {"class": "name main anime"})
+            #this will crash if doesnt exist, but it shouldnt happen
+            raw_url = raw_title.a['href']
+            anime_url = SITE_URL+raw_url
+            log.debug(f"Got anime url: {anime_url}")
+            anime_title = raw_title.a.string
+            log.debug(f"Got anime title: {anime_title}")
+
+            #not checking for awards right now, coz Im lazy #TODO
+            #print(item.find_all("td"))
+            #print(item.find_all("td", title=lambda value: value and value.startswith("type")))
+
+            #print(item.find("td", "class"="type"))
 
     def anime_data(self, raw_data:str):
         '''Cleans up raw anime page text into dict with only useful stuff'''
-
         sauce = soup(raw_data, 'html.parser')
 
-        data = data_types.Anime()
-
-        data.url_title = sauce.title.string
-        log.debug(f"Got page title: {data.url_title}")
+        url_title = sauce.title.string
+        log.debug(f"Got page title: {url_title}")
 
         #this is not the most efficient thing since we should already know url
         #from response of requests. Also it may break. But for now it will do
-        data.url_link = sauce.find("link", {"property": "og:url"})['href']
-        log.debug(f"Got page url: {data.url_link}")
+        url_link = sauce.find("link", {"property": "og:url"})['href']
+        log.debug(f"Got page url: {url_link}")
 
         #checking page's title to find if it returned adult content warning
         #Idk if it may break at some point or not
-        if data.url_title.count("Adult Content Warning"):
+        if url_title.count("Adult Content Warning"):
             log.warning("Got adult content warning, raising exception")
-            raise exceptions.AdultContentWarning(data.url_link)
+            raise exceptions.AdultContentWarning(url_link)
 
         raw_info_tab = sauce.find("div", {"class": "tabbed_pane"})
         #we are doing like that here and below, coz items may have unconfirmed
@@ -78,8 +96,8 @@ class AnidbProcessor:
 
         #since raw title info should only contain one tag of each type, it should
         #be possible to pass things like that
-        data.main_title = raw_main_title.td.span.string
-        log.debug(f"Got main title: {data.main_title}")
+        main_title = raw_main_title.td.span.string
+        log.debug(f"Got main title: {main_title}")
 
         def get_titles(raw_data, official = False):
             titles = []
@@ -115,16 +133,16 @@ class AnidbProcessor:
         raw_official_verified_titles += raw_info_tab.find_all("tr",
                                         {"class": "g_odd official verified yes"})
 
-        data.official_titles = data_types.TitleStorage()
-        data.official_titles.verified = data_types.TitleStorage()
+        official_titles = data_types.TitleStorage()
+        official_titles.verified = data_types.TitleStorage()
         for item in raw_official_verified_titles:
             titles = get_titles(item, official = True)
 
             for item in titles:
-                setattr(data.official_titles.verified, item.language, item)
+                setattr(official_titles.verified, item.language, item)
 
         log.debug("Got following verified titles: "
-                 f"{list(vars(data.official_titles.verified).items())}")
+                 f"{list(vars(official_titles.verified).items())}")
 
         raw_official_unverified_titles = raw_info_tab.find_all("tr",
                                         {"class": "official verified no"})
@@ -133,31 +151,31 @@ class AnidbProcessor:
                                         {"class": "g_odd official verified no"})
 
 
-        data.official_titles.unverified = data_types.TitleStorage()
+        official_titles.unverified = data_types.TitleStorage()
         for item in raw_official_unverified_titles:
             titles = get_titles(item, official = False)
 
             for item in titles:
-                setattr(data.official_titles.unverified, item.language, item)
+                setattr(official_titles.unverified, item.language, item)
 
         log.debug("Got following unverified titles: "
-                 f"{list(vars(data.official_titles.unverified).items())}")
+                 f"{list(vars(official_titles.unverified).items())}")
 
         raw_show_type = (raw_info_tab.find("tr", {"class": "g_odd type"}) or
                          raw_info_tab.find("tr", {"class": "type"}))
         #this will return both type and length
-        data.show_type = raw_show_type.td.text
-        log.debug(f"Got show type: {data.show_type}")
+        show_type = raw_show_type.td.text
+        log.debug(f"Got show type: {show_type}")
 
         raw_airing = raw_info_tab.find("tr", {"class": "year"})
-        data.airing = raw_airing.td.text
-        log.debug(f"Got airing dates: {data.airing}")
+        airing = raw_airing.td.text
+        log.debug(f"Got airing dates: {airing}")
 
         raw_tags_info = (raw_info_tab.find("tr", {"class": "g_odd tags"}) or
                          raw_info_tab.find("tr", {"class": "tags"}))
         raw_tags_list = raw_tags_info.find_all("a", {"class": "tooltip"})
 
-        data.tags = data_types.TagStorage()
+        tags = data_types.TagStorage()
         for item in raw_tags_list:
             url = item.get('href', None)
             if url:
@@ -169,25 +187,23 @@ class AnidbProcessor:
                                        description = description,
                                        link = url)
             log.debug(f"Got tag: {item_data}")
-            setattr(data.tags, name, item_data)
-        log.debug(f"Got tags:{list(vars(data.tags).items())}")
+            setattr(tags, name, item_data)
+        log.debug(f"Got tags:{list(vars(tags).items())}")
 
         raw_resources = raw_info_tab.find("tr", {"class": "resources"})
 
-        data.resources = data_types.UrlStorage()
+        resources = data_types.UrlStorage()
         for item in raw_resources.td.find_all("div"):
             url = item.a.get('href', None)
-            if url:
-                url = SITE_URL+url
             title = item.a.get('title', None)
             #I could also parse link's group, but not doing it rn
             item_data = data_types.Url(name = title,
                                        link = url)
             log.debug(f"Got url: {item_data}")
-            setattr(data.resources, title, item_data)
-        log.debug(f"Got resources:{list(vars(data.tags).items())}")
+            setattr(resources, title, item_data)
+        log.debug(f"Got resources:{list(vars(tags).items())}")
 
-        data.scores = data_types.ScoreStorage()
+        scores = data_types.ScoreStorage()
 
         def get_score(raw_data):
             #coz its the same structure for all of these below, except for top tr
@@ -209,19 +225,19 @@ class AnidbProcessor:
         raw_rating = (raw_info_tab.find("tr", {"class": "g_odd rating"}) or
                       raw_info_tab.find("tr", {"class": "rating"}))
         rating_data = get_score(raw_rating)
-        setattr(data.scores, rating_data.name, rating_data)
+        setattr(scores, rating_data.name, rating_data)
 
         raw_average = (raw_info_tab.find("tr", {"class": "g_odd tmprating"}) or
                        raw_info_tab.find("tr", {"class": "tmprating"}))
         average_data = get_score(raw_average)
-        setattr(data.scores, average_data.name, average_data)
+        setattr(scores, average_data.name, average_data)
 
         raw_review_rating = (raw_info_tab.find("tr", {"class": "g_odd reviews"}) or
                              raw_info_tab.find("tr", {"class": "reviews"}))
         review_rating_data = get_score(raw_review_rating)
-        setattr(data.scores, review_rating_data.name, review_rating_data)
+        setattr(scores, review_rating_data.name, review_rating_data)
 
-        log.debug(f"Got scores:{list(vars(data.scores).items())}")
+        log.debug(f"Got scores:{list(vars(scores).items())}")
 
         #that sums up the data we can possibly get from infobox, with the
         #exclusion of added_by and edited_by, coz Im bored #TODO
@@ -230,14 +246,29 @@ class AnidbProcessor:
         #make sense. Then call it a day
         raw_description = sauce.find("div",
                                     {"class": "g_bubble g_section desc resized"})
-        data.description = raw_description.text
-        log.debug(f"Got description: {data.description}")
+        description = raw_description.text
+        log.debug(f"Got description: {description}")
 
         raw_cover = sauce.find("meta", {"property": "og:image"})
-        data.cover_image = raw_cover.get('content', None)
+        cover_image = raw_cover.get('content', None)
+        log.debug(f"Got cover image link: {cover_image}")
 
-        log.debug(f"Got cover image link: {data.cover_image}")
+        anime_info = data_types.AnimeInfo(
+                                          main_title = main_title,
+                                          titles = official_titles,
+                                          show_type = show_type,
+                                          airing = airing,
+                                          tags = tags,
+                                          resources = resources,
+                                          scores = scores,
+                                          description = description,
+                                          cover_url = cover_image,
+                                          )
 
-        log.debug(f"Collected following data total:{list(vars(data).items())}")
+        data = data_types.AnidbPage(title = url_title,
+                                    url = url_link,
+                                    content = anime_info)
+
+        log.debug(f"Collected following data total:{data}")
 
         return data

@@ -1,19 +1,21 @@
-# For dataclasses and dataclass storages used across this package's modules
-# These are used instead of dictionaries to ease throwing incorrect data away
-# later with isinstance() check
+# For data storages used across this package's modules
+
 from dataclasses import dataclass
 
-class Anime:
+class WebpageContent:
     pass
 
-# #@dataclass
-# class AnimeInfo:
-    # pass
+#Ensuring that we wont be able to overwrite data
+@dataclass(frozen = True)
+class AnidbPage:
+    title: str
+    url: str
+    content: WebpageContent
 
 class TitleStorage:
     pass
 
-@dataclass
+@dataclass(frozen = True)
 class Title:
     title: str
     language: str
@@ -25,7 +27,7 @@ class TagStorage:
     pass
     #tags: list[Tag]
 
-@dataclass
+@dataclass(frozen = True)
 class Tag:
     name: str
     link: str = ""
@@ -34,7 +36,7 @@ class Tag:
 class UrlStorage:
     pass
 
-@dataclass
+@dataclass(frozen = True)
 class Url:
     name: str
     link: str
@@ -43,7 +45,7 @@ class Url:
 class ScoreStorage:
     pass
 
-@dataclass
+@dataclass(frozen = True)
 class Score:
     name: str
     value: float
@@ -55,10 +57,25 @@ class ReviewStorage:
 class Review:
     pass
 
+@dataclass(frozen = True)
+class AnimeInfo(WebpageContent):
+    main_title: str
+    show_type: str
+    airing: str
+    description: str
+    cover_url: str
+    titles: TitleStorage
+    tags: TagStorage
+    scores: ScoreStorage
+    resources: UrlStorage
+
 class SearchStorage:
     pass
 
-@dataclass
+class SearchItem:
+    pass
+
+@dataclass(frozen = True)
 class AnimeSearchPreview:
     number: int
     title: str
