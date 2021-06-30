@@ -7,22 +7,13 @@ class AnidbClient:
     '''Default way to make fetcher and processor communicate.
     Its strongly recommended to pass custom fetcher_insance, initialized with real
     browser's user_agent, because by default anidb bans all automated requests'''
-    def __init__(self, fetcher_instance = None, processor_instance = None):
+    def __init__(self, fetcher_instance = None):
         #if not passed manually - these are instanced with no args, for now
         if not fetcher_instance or not isinstance(fetcher_instance,
                                                   fetcher.AnidbFetcher):
             self.fetcher = fetcher.AnidbFetcher()
         else:
             self.fetcher = fetcher_instance
-
-        if not processor_instance or not isinstance(processor_instance,
-                                                    processor.AnidbProcessor):
-            self.processor = processor.AnidbProcessor()
-        else:
-            self.processor = processor_instance
-
-        #self.fetcher = fetcher_instance or fetcher.AnidbFetcher()
-        #self.processor = processor_instance or fetcher.AnidbProcessor()
 
     def get_anime(self, anime):
         '''Get provided anime. Receives either id or name to search it'''
@@ -41,10 +32,10 @@ class AnidbClient:
             #results out with isinstance() and proceed accordingly
             if data.url.count("search"):
                 log.debug("Received search results, processing accordingly")
-                clean_data = self.processor.search_data(data.text)
+                clean_data = processor.search_data(data.text)
                 return clean_data
 
         log.debug("Received anime data, processing accordingly")
-        clean_data = self.processor.anime_data(data.text)
+        clean_data = processor.anime_data(data.text)
 
         return clean_data

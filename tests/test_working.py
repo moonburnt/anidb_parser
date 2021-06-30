@@ -42,5 +42,5 @@ def test_getting_animu(animu):
 
     result = client.get_anime(animu)
 
-    assert isinstance(result, anidb_parser.Anime)
+    assert isinstance(result, anidb_parser.AnidbPage)
 

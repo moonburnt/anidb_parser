@@ -12,9 +12,6 @@ class AnidbPage:
     url: str
     content: WebpageContent
 
-class TitleStorage:
-    pass
-
 @dataclass(frozen = True)
 class Title:
     title: str
@@ -22,19 +19,11 @@ class Title:
     language_short: str = ""
     verified: bool = False
 
-#@dataclass
-class TagStorage:
-    pass
-    #tags: list[Tag]
-
 @dataclass(frozen = True)
 class Tag:
     name: str
     link: str = ""
     description: str = ""
-
-class UrlStorage:
-    pass
 
 @dataclass(frozen = True)
 class Url:
@@ -42,17 +31,11 @@ class Url:
     link: str
     description: str = ""
 
-class ScoreStorage:
-    pass
-
 @dataclass(frozen = True)
 class Score:
     name: str
     value: float
     link: str = ""
-
-class ReviewStorage:
-    pass
 
 class Review:
     pass
@@ -64,13 +47,11 @@ class AnimeInfo(WebpageContent):
     airing: str
     description: str
     cover_url: str
-    titles: TitleStorage
-    tags: TagStorage
-    scores: ScoreStorage
-    resources: UrlStorage
-
-class SearchStorage:
-    pass
+    titles: dict
+    tags: dict
+    scores: dict
+    resources: dict
+    staff: dict
 
 class SearchItem:
     pass
