@@ -2,45 +2,53 @@
 
 from dataclasses import dataclass
 
+
 class WebpageContent:
     pass
 
-#Ensuring that we wont be able to overwrite data
-@dataclass(frozen = True)
+
+# Ensuring that we wont be able to overwrite data
+@dataclass(frozen=True)
 class AnidbPage:
     title: str
     url: str
     content: WebpageContent
 
-@dataclass(frozen = True)
+
+@dataclass(frozen=True)
 class Title:
     title: str
     language: str
     language_short: str = ""
     verified: bool = False
 
-@dataclass(frozen = True)
+
+@dataclass(frozen=True)
 class Tag:
     name: str
     link: str = ""
     description: str = ""
 
-@dataclass(frozen = True)
+
+@dataclass(frozen=True)
 class Url:
     name: str
     link: str
     description: str = ""
 
-@dataclass(frozen = True)
+
+@dataclass(frozen=True)
 class Score:
     name: str
     value: float
     link: str = ""
 
+
 class Review:
     pass
 
-@dataclass(frozen = True)
+
+@dataclass(frozen=True)
 class AnimeInfo(WebpageContent):
     main_title: str
     show_type: str
@@ -53,10 +61,12 @@ class AnimeInfo(WebpageContent):
     resources: dict
     staff: dict
 
+
 class SearchItem:
     pass
 
-@dataclass(frozen = True)
+
+@dataclass(frozen=True)
 class AnimeSearchPreview:
     number: int
     title: str
